@@ -1,17 +1,18 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 export default function Sidebar() {
+  const navigate = useNavigate();
   const menu = [
-    { name: "Registro de Factura", path: "/" },
-    { name: "Inventario", path: "/inventario" },
-    { name: "Requisiciones", path: "/requisiciones" },
-    { name: "Asignación", path: "/asignacion" },
-    { name: "Historial", path: "/historial" },
+    { name: "Registro de Factura", path: "/app/almacen/registro-factura" },
+    { name: "Inventario", path: "/app/almacen/inventario" },
+    { name: "Requisiciones", path: "/app/almacen/requisiciones" },
+    { name: "Asignación", path: "/app/almacen/asignacion" },
+    { name: "Historial", path: "/app/almacen/historial" },
   ];
 
   return (
     <div className="w-64 h-screen flex flex-col justify-between 
-      bg-gradient-to-b from-[rgb(120,0,0)] to-[rgb(120,0,0)] 
+      bg-gradient-to-b from-[rgb(0,48,73)] to-[#000f17] 
       text-white shadow-2xl">
 
       {/* TOP */}
@@ -78,7 +79,9 @@ export default function Sidebar() {
         <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-3"></div>
 
         {/* BOTÓN VOLVER */}
-        <button className="w-full py-2.5 rounded-lg text-sm 
+        <button 
+          onClick={() => navigate("/dashboard")}
+          className="w-full py-2.5 rounded-lg text-sm 
           bg-white/10 border border-white/10 
           backdrop-blur-md
           hover:bg-white/20 hover:scale-[1.02]

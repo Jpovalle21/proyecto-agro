@@ -1,20 +1,26 @@
+import "../almacen.css";
+
+
 export default function RegistroFactura() {
   return (
     <div className="p-4 w-full">
 
       {/* HEADER */}
       <div className="mb-6">
-        <h1 className="text-2xl  font-semibold text-gray-800">
+        <h1 className="text-3xl font-bold text-slate-900">
           Registro de Factura
         </h1>
+        <p className="mt-2 text-sm font-medium text-slate-500">
+          Registra y gestiona las facturas de compra
+        </p>
       </div>
 
       {/* CARD */}
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 px-6 py-3">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 px-6 py-4">
 
         {/* TITLE */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-[rgb(45,90,58)]/10 flex items-center justify-center">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-[rgb(205,205,205)]/20 flex items-center justify-center">
             📄
           </div>
           <h2 className="text-lg font-semibold text-gray-700">
@@ -23,7 +29,7 @@ export default function RegistroFactura() {
         </div>
 
         {/* FORM */}
-        <div className="grid grid-cols-2 gap-5">
+        <div className="grid grid-cols-2 gap-5 font-medium">
 
           <div>
             <label className="label">Número de Factura</label>
@@ -64,7 +70,7 @@ export default function RegistroFactura() {
         </div>
 
         {/* IMÁGENES */}
-        <div className="grid grid-cols-2 gap-6 mt-8">
+        <div className="grid grid-cols-2 gap-6 mt-6">
 
           {/* PRODUCTO */}
           <div className="upload-box">
@@ -93,7 +99,7 @@ export default function RegistroFactura() {
         </div>
 
         {/* BOTONES */}
-        <div className="flex justify-between items-center mt-8">
+        <div className="flex justify-between items-center mt-5">
 
           <button className="btn-secondary">
             Limpiar

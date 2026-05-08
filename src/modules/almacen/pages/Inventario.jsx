@@ -1,3 +1,5 @@
+import "../almacen.css";
+
 const productos = [
   {
     nombre: "Guantes de Nitrilo Talla L",
@@ -55,9 +57,12 @@ export default function Inventario() {
 
       {/* HEADER */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-3xl font-bold text-slate-900">
           Inventario
         </h1>
+        <p className="mt-2 text-sm font-medium text-slate-500">
+          Visualiza y gestiona el stock de tus productos
+        </p>
       </div>
 
       {/* FILTROS */}

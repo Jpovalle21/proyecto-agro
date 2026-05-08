@@ -1,4 +1,6 @@
 import { useNavigate } from "react-router-dom";
+import "../almacen.css";
+
 
 const requisiciones = [
   {
@@ -46,9 +48,12 @@ export default function Requisiciones() {
 
       {/* HEADER */}
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-gray-800">
+        <h1 className="text-2xl font-bold text-slate-900">
           Requisiciones
         </h1>
+        <p className="mt-2 text-sm font-medium text-slate-500">
+          Gestiona las solicitudes de productos
+        </p>
       </div>
 
       {/* RESUMEN */}
@@ -137,7 +142,7 @@ export default function Requisiciones() {
 
           {/* HISTORIAL */}
           <button 
-            onClick={() => navigate("/requisiciones/historial")}
+            onClick={() => navigate("/app/almacen/historial-requisiciones")}
             className="flex items-center gap-2 px-3 py-2 rounded-lg 
             bg-gray-50 border border-gray-200 text-gray-600 text-sm
             hover:bg-gray-100 transition"

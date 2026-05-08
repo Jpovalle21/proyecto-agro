@@ -1,3 +1,5 @@
+import "../almacen.css";
+
 const historial = [
   {
     codigo: "REQ-00012",
@@ -27,7 +29,7 @@ const historial = [
   },
 ];
 
-export default function Historial() {
+export default function HistorialRequisiciones() {
   return (
     <div className="p-6">
 
