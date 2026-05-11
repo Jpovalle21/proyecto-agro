@@ -8,8 +8,8 @@ export const MODULES = [
         id: "almacen",
         name: "Almacén",
         path: "/app/almacen",
-        color: "#4A7C59",
-        colorDark: "#2d5a3a",
+        color: "#003049",
+        colorDark: "#001D2D",
         description: "Inventario y stock",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 lg:w-10 lg:h-10">
@@ -221,8 +221,8 @@ export const MODULES = [
         id: "compras",
         name: "Compras",
         path: "/app/compras",
-        color: "#F57C00",
-        colorDark: "#c56200",
+        color: "#669BBC",
+        colorDark: "#4A7894",
         description: "Procesos productivos",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 lg:w-10 lg:h-10">

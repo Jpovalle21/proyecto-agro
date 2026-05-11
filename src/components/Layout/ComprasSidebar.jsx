@@ -1,61 +1,70 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { MAIN_NAV, MOCK_USER } from "../../config/Modules";
 
-export default function MainSidebar() {
+export default function ComprasSidebar() {
   const navigate = useNavigate();
 
+  const menu = [
+    { name: "Solicitudes", path: "/app/compras/solicitudes" },
+    { name: "Historial", path: "/app/compras/historial" },
+  ];
+
   return (
-    <aside className="hidden md:flex w-64 h-screen flex-col justify-between bg-gradient-to-b from-[rgb(120,0,0)] to-[rgb(24,0,0)] text-white shadow-xl shrink-0">
+    <div className="w-64 h-screen flex flex-col justify-between 
+      bg-gradient-to-b from-[rgb(102,155,188)] to-[rgb(0,9,14)]
+      text-white shadow-2xl">
+
+      {/* TOP */}
       <div className="px-5 pt-6">
-        <h1 className="text-base font-semibold tracking-widest mb-8">
+
+        {/* LOGO */}
+        <h1 className="text-base font-semibold tracking-widest opacity-90 mb-8">
           AGRO ÁNGELES
         </h1>
 
+        {/* USUARIO */}
         <div className="flex items-center gap-3 mb-8">
-          <div className="w-11 h-11 rounded-full bg-white/15 flex items-center justify-center text-sm font-semibold">
+          <div className="w-11 h-11 rounded-full 
+            bg-white/20 backdrop-blur-md
+            flex items-center justify-center 
+            text-sm font-semibold
+            shadow-inner">
             CM
           </div>
+
           <div>
-            <p className="text-sm font-medium">{MOCK_USER.name}</p>
-            <p className="text-xs text-white/55">{MOCK_USER.role}</p>
+            <p className="text-sm font-medium tracking-wide">
+              Juan Pablo
+            </p>
+            <p className="text-xs text-white/60">
+              Administrador
+            </p>
           </div>
         </div>
 
         {/* SEPARADOR */}
         <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-5"></div>
 
-        <p className="text-xs uppercase tracking-widest text-white/40 mb-4 pl-2">
-          Panel principal
+        {/* TÍTULO */}
+        <p className="text-xs uppercase tracking-widest text-white/40 mb-5 pl-2">
+          Compras
         </p>
 
+        {/* MENÚ */}
         <nav className="flex flex-col gap-1">
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `px-4 py-3 rounded-lg text-sm transition ${
-                isActive
-                  ? "bg-white text-[#1f2937] font-medium"
-                  : "text-white/75 hover:text-white hover:bg-white/10"
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
-
-          {MAIN_NAV.map((item) => (
+          {menu.map((item) => (
             <NavLink
-              key={item.id}
+              key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-4 py-3 rounded-lg text-sm transition ${
+                `px-4 py-3 rounded-lg text-sm transition-all duration-300
+                ${
                   isActive
-                    ? "bg-white text-[#1f2937] font-medium"
-                    : "text-white/75 hover:text-white hover:bg-white/10"
+                    ? "bg-white/90 text-[rgb(45,90,58)] font-medium shadow-md"
+                    : "text-white/80 hover:text-white hover:bg-white/10"
                 }`
               }
             >
-              {item.icon}
-              {item.label}
+              {item.name}
             </NavLink>
           ))}
         </nav>
@@ -87,6 +96,6 @@ export default function MainSidebar() {
           Cerrar sesión
         </button>
       </div>
-     </aside>
+    </div>
   );
 }

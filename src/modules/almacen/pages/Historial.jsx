@@ -20,7 +20,7 @@ const movimientos = [
     cantidad: 20,
     area: "Producción",
     observacion: "Entrega para turno día",
-    firma: "Juan Pérez",
+    firma: "Juan Pablo",
   },
   {
     tipo: "solicitud",
@@ -30,7 +30,7 @@ const movimientos = [
     cantidad: 60,
     area: "SST",
     observacion: "Solicitud pendiente de entrega",
-    firma: "María López",
+    firma: "Andres Aranda",
   },
   {
     tipo: "salida",
@@ -40,7 +40,7 @@ const movimientos = [
     cantidad: 8,
     area: "Mantenimiento",
     observacion: "Entrega de dotación",
-    firma: "Carlos Ruiz",
+    firma: "Juan Jose",
   },
   {
     tipo: "entrada",

@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { MODULES, MODULE_NAV, MOCK_USER } from "../../config/Modules";
-import Sidebar from "./Sidebar";
+import Sidebar from "./AlmacenSidebar";
 import GestionHumanaSidebar from "./GestionHumanaSidebar";
-
+import ComprasSidebar from "./ComprasSidebar";
 
 
 
@@ -219,6 +219,10 @@ export default function ModuleLayout({ moduleId }) {
         <aside className="hidden md:block shrink-0">
           <GestionHumanaSidebar />
         </aside>
+      ) : moduleId === "compras" ? (
+        <aside className="hidden md:block shrink-0">
+          <ComprasSidebar />
+        </aside>  
       ) : (
         <aside
           className="hidden md:flex w-64 h-screen text-white flex-col shadow-2xl shrink-0"

@@ -13,8 +13,18 @@ import Requisiciones from "./modules/almacen/pages/Requisiciones";
 import Historial from "./modules/almacen/pages/Historial";
 import HistorialRequisiciones from "./modules/almacen/pages/HistorialRequisiciones";
 import Asignacion from "./modules/almacen/pages/Asignacion";
+
+// Gestión Humana
 import Ingresos from "./modules/gestion-humana/pages/Ingresos";
 import PerfilUsuario from "./modules/gestion-humana/pages/PerfilUsuario";
+import Novedades from "./modules/gestion-humana/pages/Novedades";
+import Bienestar from "./modules/gestion-humana/pages/Bienestar";
+import Informe from "./modules/gestion-humana/pages/Informe";
+
+// Compras
+import Solicitudes from "./modules/compras/pages/Solicitudes";
+import HistorialCompras from "./modules/compras/pages/HistorialCompras";
+
 
 
 
@@ -99,21 +109,46 @@ function App() {
 
                 <Route
                   path={`${module.path}/novedades`}
-                  element={<PlaceholderPage title="Novedades" />}
+                  element={<Novedades />}
                 />
 
                 <Route
                   path={`${module.path}/bienestar`}
-                  element={<PlaceholderPage title="Bienestar" />}
+                  element={<Bienestar />}
                 />
 
                 <Route
                   path={`${module.path}/informe`}
-                  element={<PlaceholderPage title="Informe" />}
+                  element={<Informe />}
                 />
               </Route>
             );
           } 
+
+          if (module.id === "compras") {
+            return (
+              <Route
+                key={module.id}
+                element={<ModuleLayout moduleId={module.id} />}
+              >
+                <Route
+                  path={module.path}
+                  element={<Navigate to={`${module.path}/solicitudes`} replace />}
+                />
+
+                <Route
+                  path={`${module.path}/solicitudes`}
+                  element={<Solicitudes />}
+                />
+
+                <Route
+                  path={`${module.path}/historial`}
+                  element={<HistorialCompras />}
+                />
+              </Route>
+            );
+          }
+
 
           return (
             <Route
