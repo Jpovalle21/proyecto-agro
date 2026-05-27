@@ -5,7 +5,7 @@ export default function MainSidebar() {
   const navigate = useNavigate();
 
   return (
-    <aside className="hidden md:flex w-64 h-screen flex-col justify-between bg-gradient-to-b from-[rgb(120,0,0)] to-[rgb(24,0,0)] text-white shadow-xl shrink-0">
+    <aside className="hidden md:flex w-64 h-screen flex-col justify-between bg-gradient-to-b from-[rgb(0,30,49)] to-[rgb(24,0,0)] text-white shadow-xl shrink-0">
       <div className="px-5 pt-6">
         <h1 className="text-base font-semibold tracking-widest mb-8">
           AGRO ÁNGELES
@@ -68,15 +68,7 @@ export default function MainSidebar() {
         <div className="h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-3"></div>
 
         {/* BOTÓN VOLVER */}
-        <button 
-          onClick={() => navigate("/dashboard")}
-          className="w-full py-2.5 rounded-lg text-sm 
-          bg-white/10 border border-white/10 
-          backdrop-blur-md
-          hover:bg-white/20 hover:scale-[1.02]
-          transition-all duration-300">
-          ← Volver al panel
-        </button>
+
 
         {/* BOTÓN CERRAR SESIÓN */}
         <button className="w-full py-2.5 rounded-lg text-sm 

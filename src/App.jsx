@@ -7,6 +7,7 @@ import PlaceholderPage from "./components/ui/PlaceholderPage";
 
 import { MODULES } from "./config/Modules";
 
+// Almacén
 import RegistroFactura from "./modules/almacen/pages/RegistroFactura";
 import Inventario from "./modules/almacen/pages/Inventario";
 import Requisiciones from "./modules/almacen/pages/Requisiciones";
@@ -24,6 +25,11 @@ import Informe from "./modules/gestion-humana/pages/Informe";
 // Compras
 import Solicitudes from "./modules/compras/pages/Solicitudes";
 import HistorialCompras from "./modules/compras/pages/HistorialCompras";
+
+// Mantenimiento
+import Maquinarias from "./modules/mantenimiento/pages/Maquinarias";
+import HistorialMantenimiento from "./modules/mantenimiento/pages/HistorialMantenimiento";
+import SolicitudesMantenimiento from "./modules/mantenimiento/pages/SolicitudesMantenimiento";
 
 
 
@@ -146,6 +152,37 @@ function App() {
                   element={<HistorialCompras />}
                 />
               </Route>
+            );
+          }
+
+          if (module.id === "mantenimiento") {
+            return (
+              <Route
+                key={module.id}
+                element={<ModuleLayout moduleId={module.id} />}
+              >
+                <Route
+                  path={module.path}
+                  element={<Navigate to={`${module.path}/solicitudes-mantenimiento`} replace />}
+                />
+
+                <Route
+                  path={`${module.path}/solicitudes-mantenimiento`}
+                  element={<SolicitudesMantenimiento />}
+                />
+
+                <Route
+                  path={`${module.path}/historial-mantenimiento`}
+                  element={<HistorialMantenimiento />}
+                />
+
+                <Route
+                  path={`${module.path}/maquinarias`}
+                  element={<Maquinarias />}
+                />
+
+                </Route>
+   
             );
           }
 

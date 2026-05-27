@@ -1,58 +1,6 @@
 import { useMemo, useState } from "react";
+import { formatDateTime, loadMovements } from "../data/almacenStore";
 import "../almacen.css";
-
-const movimientos = [
-  {
-    tipo: "entrada",
-    fecha: "15/05/2024 10:30",
-    elemento: "Guantes de Nitrilo Talla L",
-    item: "GN-001",
-    cantidad: 100,
-    area: "Almacén",
-    observacion: "Registro de factura FAC-0012345",
-    firma: "Administrador",
-  },
-  {
-    tipo: "salida",
-    fecha: "15/05/2024 11:20",
-    elemento: "Guantes de Nitrilo Talla L",
-    item: "GN-001",
-    cantidad: 20,
-    area: "Producción",
-    observacion: "Entrega para turno día",
-    firma: "Juan Pablo",
-  },
-  {
-    tipo: "solicitud",
-    fecha: "16/05/2024 08:45",
-    elemento: "Tapabocas Industrial",
-    item: "TB-014",
-    cantidad: 60,
-    area: "SST",
-    observacion: "Solicitud pendiente de entrega",
-    firma: "Andres Aranda",
-  },
-  {
-    tipo: "salida",
-    fecha: "17/05/2024 14:10",
-    elemento: "Botas de Seguridad",
-    item: "BS-022",
-    cantidad: 8,
-    area: "Mantenimiento",
-    observacion: "Entrega de dotación",
-    firma: "Juan Jose",
-  },
-  {
-    tipo: "entrada",
-    fecha: "18/05/2024 09:15",
-    elemento: "Alcohol Antiséptico",
-    item: "AL-007",
-    cantidad: 40,
-    area: "Almacén",
-    observacion: "Compra proveedor externo",
-    firma: "Administrador",
-  },
-];
 
 const tabs = [
   { id: "entrada", label: "Entradas" },
@@ -62,25 +10,27 @@ const tabs = [
 ];
 
 export default function Historial() {
+  const [movimientos] = useState(() => loadMovements());
   const [activeTab, setActiveTab] = useState("todos");
   const [tipoFiltro, setTipoFiltro] = useState("todos");
   const [busqueda, setBusqueda] = useState("");
 
   const historialFiltrado = useMemo(() => {
-    return movimientos.filter((movimiento) => {
-      const coincideTab =
-        activeTab === "todos" || movimiento.tipo === activeTab;
+    return movimientos
+      .filter((movimiento) => {
+        const coincideTab =
+          activeTab === "todos" || movimiento.tipo === activeTab;
 
-      const coincideTipo =
-        tipoFiltro === "todos" || movimiento.tipo === tipoFiltro;
+        const coincideTipo =
+          tipoFiltro === "todos" || movimiento.tipo === tipoFiltro;
 
-      const texto = `${movimiento.tipo} ${movimiento.elemento} ${movimiento.item} ${movimiento.area} ${movimiento.observacion} ${movimiento.firma}`.toLowerCase();
+        const texto = `${movimiento.tipo} ${movimiento.elemento} ${movimiento.item} ${movimiento.area} ${movimiento.observacion} ${movimiento.firma}`.toLowerCase();
+        const coincideBusqueda = texto.includes(busqueda.toLowerCase());
 
-      const coincideBusqueda = texto.includes(busqueda.toLowerCase());
-
-      return coincideTab && coincideTipo && coincideBusqueda;
-    });
-  }, [activeTab, tipoFiltro, busqueda]);
+        return coincideTab && coincideTipo && coincideBusqueda;
+      })
+      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+  }, [activeTab, tipoFiltro, busqueda, movimientos]);
 
   const exportarCSV = () => {
     const headers = [
@@ -89,14 +39,14 @@ export default function Historial() {
       "Elemento entregado",
       "Item",
       "Cantidad",
-      "Área",
-      "Observación",
+      "Area",
+      "Observacion",
       "Firma",
     ];
 
     const rows = historialFiltrado.map((m) => [
       m.tipo,
-      m.fecha,
+      formatDateTime(m.fecha),
       m.elemento,
       m.item,
       m.cantidad,
@@ -106,7 +56,7 @@ export default function Historial() {
     ]);
 
     const csv = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${cell}"`).join(","))
+      .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
       .join("\n");
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -128,7 +78,7 @@ export default function Historial() {
             Historial
           </h1>
           <p className="mt-2 text-sm font-medium text-slate-500">
-            Consulta movimientos, entregas y solicitudes realizadas dentro del almacén.
+            Consulta movimientos, entregas y solicitudes realizadas dentro del almacen.
           </p>
         </div>
 
@@ -168,7 +118,7 @@ export default function Historial() {
             <input
               value={busqueda}
               onChange={(event) => setBusqueda(event.target.value)}
-              placeholder="Buscar elemento, item, área o firma..."
+              placeholder="Buscar elemento, item, area o firma..."
               className="h-11 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none transition focus:border-[rgb(0,48,73)] focus:ring-4 focus:ring-slate-100 md:w-80"
             />
 
@@ -203,33 +153,28 @@ export default function Historial() {
                 <th className="px-5 py-4 text-left">Elemento entregado</th>
                 <th className="px-5 py-4 text-left">Item</th>
                 <th className="px-5 py-4 text-center">Cantidad</th>
-                <th className="px-5 py-4 text-left">Área a la que se entrega</th>
-                <th className="px-5 py-4 text-left">Observación</th>
+                <th className="px-5 py-4 text-left">Area a la que se entrega</th>
+                <th className="px-5 py-4 text-left">Observacion</th>
                 <th className="px-5 py-4 text-left">Firma</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100 text-slate-600">
-              {historialFiltrado.map((m, index) => (
-                <tr
-                  key={`${m.item}-${index}`}
-                  className="transition hover:bg-slate-50"
-                >
+              {historialFiltrado.map((m) => (
+                <tr key={m.id} className="transition hover:bg-slate-50">
                   <td className="px-5 py-4">
                     <TipoBadge tipo={m.tipo} />
                   </td>
 
                   <td className="px-5 py-4 font-medium text-slate-600">
-                    {m.fecha}
+                    {formatDateTime(m.fecha)}
                   </td>
 
                   <td className="px-5 py-4 font-semibold text-slate-800">
                     {m.elemento}
                   </td>
 
-                  <td className="px-5 py-4 text-slate-500">
-                    {m.item}
-                  </td>
+                  <td className="px-5 py-4 text-slate-500">{m.item}</td>
 
                   <td className="px-5 py-4 text-center font-bold text-slate-800">
                     {m.cantidad}
@@ -241,22 +186,26 @@ export default function Historial() {
                     </span>
                   </td>
 
-                  <td className="px-5 py-4 text-slate-500">
-                    {m.observacion}
-                  </td>
+                  <td className="px-5 py-4 text-slate-500">{m.observacion}</td>
 
                   <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgb(0,48,73)] text-xs font-bold text-white">
-                        {m.firma
-                          .split(" ")
-                          .map((word) => word[0])
-                          .slice(0, 2)
-                          .join("")}
-                      </div>
-                      <span className="font-medium text-slate-600">
-                        {m.firma}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      {m.firmaImagen ? (
+                        <img
+                          src={m.firmaImagen}
+                          alt={`Firma de ${m.firma}`}
+                          className="h-12 w-32 rounded-md border border-slate-200 bg-white object-contain"
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[rgb(0,48,73)] text-xs font-bold text-white">
+                          {m.firma
+                            .split(" ")
+                            .map((word) => word[0])
+                            .slice(0, 2)
+                            .join("")}
+                        </div>
+                      )}
+                      <span className="font-medium text-slate-600">{m.firma}</span>
                     </div>
                   </td>
                 </tr>
@@ -269,7 +218,7 @@ export default function Historial() {
                       No hay movimientos para mostrar
                     </p>
                     <p className="mt-1 text-sm text-slate-500">
-                      Intenta cambiar los filtros o la búsqueda.
+                      Intenta cambiar los filtros o la busqueda.
                     </p>
                   </td>
                 </tr>

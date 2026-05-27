@@ -44,18 +44,18 @@ export default function RegistroFactura() {
           </div>
 
           <div>
+            <label className="label">Nombre del Producto</label>
+            <input className="input-pro" placeholder="Guantes..." />
+          </div>
+
+          <div>
             <label className="label">Valor Unidad</label>
             <input className="input-pro" placeholder="$ 25.000" />
           </div>
 
           <div>
-            <label className="label">Código de Ítem</label>
-            <input className="input-pro" placeholder="GN-001" />
-          </div>
-
-          <div>
-            <label className="label">Nombre del Ítem</label>
-            <input className="input-pro" placeholder="Guantes..." />
+            <label className="label">Categoria</label>
+            <input className="input-pro" placeholder="N/A" />
           </div>
 
           <div>
@@ -63,26 +63,33 @@ export default function RegistroFactura() {
             <input className="input-pro" placeholder="100" />
           </div>
 
-          <div className="col-span-2">
-            <label className="label">Discriminación</label>
-            <input className="input-pro" placeholder="N/A" />
+          <div>
+            <label className="label">Codigo Ítem</label>
+            <input className="input-pro" placeholder="GN-001" />
           </div>
+
+          <div>
+            <label className="label">Destinatario</label>
+            <select className="input-pro">
+              <option>Seleccione:</option>
+              <option>Mantenimiento</option>
+              <option>Sistemas</option>
+              <option>Gestión Humana</option>
+              <option>Veterinaria</option>
+              <option>Gerencia</option>
+              <option>S.S.T</option>
+              <option>Producción</option>
+              <option>Ambiental</option>
+              <option>Calidad</option>
+              <option>Despacho</option>
+              <option>Compras</option>
+            </select>
+          </div>
+
         </div>
 
-        {/* IMÁGENES */}
-        <div className="grid grid-cols-2 gap-6 mt-6">
-
-          {/* PRODUCTO */}
-          <div className="upload-box">
-            <p className="upload-title">Foto de Producto</p>
-
-            <div className="upload-area">
-              <span className="text-3xl">📷</span>
-              <p className="text-sm text-gray-500 mt-2">
-                Subir imagen
-              </p>
-            </div>
-          </div>
+        {/* IMÁGEN */}
+        <div className="grid gap-6 mt-6">
 
           {/* FACTURA */}
           <div className="upload-box">
@@ -99,17 +106,28 @@ export default function RegistroFactura() {
         </div>
 
         {/* BOTONES */}
-        <div className="flex justify-between items-center mt-5">
+        <div className="flex items-center justify-between mt-5">
 
-          <button className="btn-secondary">
-            Limpiar
-          </button>
+          <div>
+            <button className="btn-secondary">
+              Limpiar
+            </button>         
+          </div>
 
-          <button className="btn-primary">
-            Guardar Registro
-          </button>
+          <div className="flex items-center gap-3">         
+            <button className="btn-primary">
+              Guardar
+            </button>
+
+
+            <button className="btn-primary">
+              finalizar
+            </button>
+
+          </div>
 
         </div>
+
       </div>
     </div>
   );

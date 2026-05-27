@@ -61,7 +61,7 @@ export default function Sidebar() {
                 `px-4 py-3 rounded-lg text-sm transition-all duration-300
                 ${
                   isActive
-                    ? "bg-white/90 text-[rgb(45,90,58)] font-medium shadow-md"
+                    ? "bg-white/90 text-[rgb(0,48,73)] font-medium shadow-md"
                     : "text-white/80 hover:text-white hover:bg-white/10"
                 }`
               }

@@ -5,6 +5,7 @@ import { MODULES, MODULE_NAV, MOCK_USER } from "../../config/Modules";
 import Sidebar from "./AlmacenSidebar";
 import GestionHumanaSidebar from "./GestionHumanaSidebar";
 import ComprasSidebar from "./ComprasSidebar";
+import MantenimientoSidebar from "./MantenimientoSidebar";
 
 
 
@@ -223,7 +224,12 @@ export default function ModuleLayout({ moduleId }) {
         <aside className="hidden md:block shrink-0">
           <ComprasSidebar />
         </aside>  
+      ) :moduleId === "mantenimiento" ? (
+        <aside className="hidden md:block shrink-0">
+          <MantenimientoSidebar />
+        </aside>  
       ) : (
+        
         <aside
           className="hidden md:flex w-64 h-screen text-white flex-col shadow-2xl shrink-0"
           style={{ backgroundColor: module.colorDark }}
