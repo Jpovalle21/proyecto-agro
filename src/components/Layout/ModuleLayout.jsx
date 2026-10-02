@@ -6,6 +6,7 @@ import Sidebar from "./AlmacenSidebar";
 import GestionHumanaSidebar from "./GestionHumanaSidebar";
 import ComprasSidebar from "./ComprasSidebar";
 import MantenimientoSidebar from "./MantenimientoSidebar";
+import CalidadSidebar from "./CalidadSidebar";
 
 
 
@@ -228,6 +229,10 @@ export default function ModuleLayout({ moduleId }) {
         <aside className="hidden md:block shrink-0">
           <MantenimientoSidebar />
         </aside>  
+      ) : moduleId === "calidad" ? (
+        <aside className="hidden md:block shrink-0">
+          <CalidadSidebar />
+        </aside>
       ) : (
         
         <aside

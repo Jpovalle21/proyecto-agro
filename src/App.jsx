@@ -13,7 +13,6 @@ import Inventario from "./modules/almacen/pages/Inventario";
 import Requisiciones from "./modules/almacen/pages/Requisiciones";
 import Historial from "./modules/almacen/pages/Historial";
 import HistorialRequisiciones from "./modules/almacen/pages/HistorialRequisiciones";
-import Asignacion from "./modules/almacen/pages/Asignacion";
 
 // Gestión Humana
 import Ingresos from "./modules/gestion-humana/pages/Ingresos";
@@ -30,6 +29,10 @@ import HistorialCompras from "./modules/compras/pages/HistorialCompras";
 import Maquinarias from "./modules/mantenimiento/pages/Maquinarias";
 import HistorialMantenimiento from "./modules/mantenimiento/pages/HistorialMantenimiento";
 import SolicitudesMantenimiento from "./modules/mantenimiento/pages/SolicitudesMantenimiento";
+
+// Calidad
+import FormatosCalidad from "./modules/calidad/pages/Documentos";
+import HistorialFormatos from "./modules/calidad/pages/HistorialFormatos";
 
 
 
@@ -183,6 +186,35 @@ function App() {
 
                 </Route>
    
+            );
+          }
+
+          if (module.id === "calidad") {
+            return (
+              <Route
+                key={module.id}
+                element={<ModuleLayout moduleId={module.id} />}
+              >
+                <Route
+                  path={module.path}
+                  element={<Navigate to={`${module.path}/formatos`} replace />}
+                />
+
+                <Route
+                  path={`${module.path}/formatos`}
+                  element={<FormatosCalidad />}
+                />
+
+                <Route
+                  path={`${module.path}/historial`}
+                  element={<HistorialFormatos />}
+                />
+
+                <Route
+                  path={`${module.path}/documentos`}
+                  element={<Navigate to={`${module.path}/formatos`} replace />}
+                />
+              </Route>
             );
           }
 

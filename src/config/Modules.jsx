@@ -182,7 +182,7 @@ export const MODULES = [
         path: "/app/calidad",
         color: "#00838F",
         colorDark: "#005662",
-        description: "Procesos productivos",
+        description: "Formatos y control",
         icon: (
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 lg:w-10 lg:h-10">
                 <path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" />
@@ -258,6 +258,17 @@ export const MODULE_NAV = {
             { id: "consultar_stock", label: "Consultar stock", path: "stock" },
             { id: "despachos", label: "Despachos pendientes", path: "despachos" },
             { id: "solicitud_materiales", label: "Solicitud de materiales", path: "solicitud-materiales" },
+        ],
+        externo: [],
+    },
+    calidad: {
+        administrador: [
+            { id: "formatos", label: "Formatos", path: "formatos" },
+            { id: "historial", label: "Historial", path: "historial" },
+        ],
+        tecnico: [
+            { id: "formatos", label: "Formatos", path: "formatos" },
+            { id: "historial", label: "Historial", path: "historial" },
         ],
         externo: [],
     },
