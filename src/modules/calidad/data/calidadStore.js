@@ -878,6 +878,84 @@ export const formatTemplates = [
       },
     ],
   },
+  {
+    id: "verificacion-bpm-salud-personal",
+    codigo: "FO_PCP_001",
+    version: "3",
+    fechaElaboracion: "Mayo de 2024",
+    nombre: "Verificacion del cumplimiento de BPM y estado de salud del personal",
+    descripcion: "Verificacion semanal de BPM, estado de salud y practicas higienicas del personal.",
+    area: "Calidad",
+    frecuencia: "Semanal",
+    period: "weekly",
+    layout: "weekly-bpm-health",
+    nota:
+      "Este formato se diligencia durante la semana y se almacena como un solo cierre semanal. La fecha queda automatica y se pueden agregar todos los colaboradores necesarios.",
+    markOptions: ["✓", "X"],
+    bpmTable: {
+      valueKey: "colaboradores",
+      title: "Colaboradores evaluados",
+      help: "Agrega una fila por cada colaborador verificado durante la semana.",
+      columns: [
+        { id: "fecha", label: "Fecha", type: "auto-date", required: true, locked: true },
+        { id: "hora", label: "Hora", type: "time", required: true },
+        { id: "nombreColaborador", label: "Nombre del colaborador", type: "text", required: true },
+        { id: "cedula", label: "No. de cedula", type: "text", required: true },
+        { id: "area", label: "Area", type: "text", required: true },
+        { id: "barbaBigote", label: "Barba y/o bigote", type: "mark" },
+        { id: "maquillaje", label: "Maquillaje", type: "mark" },
+        { id: "cabelloCubierto", label: "Cabello cubierto", type: "mark" },
+        { id: "accesorios", label: "Accesorios", type: "mark" },
+        { id: "unasLimpias", label: "Unas limpias, cortas y sin esmalte", type: "mark" },
+        {
+          id: "lavadoBotasManosGuantesDelantales",
+          label: "Lavado de botas, manos, guantes y delantales",
+          type: "mark",
+        },
+        {
+          id: "usoDotacion",
+          label: "Uso adecuado y completo de la dotacion",
+          type: "mark",
+        },
+        { id: "estadoSalud", label: "Estado de salud", type: "mark" },
+        { id: "usoGuantes", label: "Uso de guantes", type: "mark" },
+        { id: "perfumesCremas", label: "Perfumes o cremas con olor", type: "mark" },
+        { id: "practicasHigienicas", label: "Practicas higienicas", type: "mark" },
+        { id: "noConformidad", label: "No conformidad", type: "textarea" },
+        { id: "accionesCorrectivas", label: "Acciones correctivas", type: "textarea" },
+        {
+          id: "firmaColaborador",
+          label: "Firma del colaborador",
+          type: "signature",
+          required: true,
+        },
+        {
+          id: "monitoreadoVerificadoPor",
+          label: "Monitoreado y/o verificado por",
+          type: "text",
+          required: true,
+        },
+      ],
+    },
+    fields: [
+      { id: "weekKey", label: "Semana", type: "fixed", locked: true },
+      { id: "coordinadorJefeProceso", label: "Coordinador y/o jefe de proceso", type: "text", required: true },
+      { id: "auxiliarCalidad", label: "Auxiliar de calidad", type: "text" },
+    ],
+    guide: [
+      { codigoNoConformidad: "C1", noConformidad: "Barba y/o bigote" },
+      { codigoNoConformidad: "C2", noConformidad: "Maquillaje" },
+      { codigoNoConformidad: "C3", noConformidad: "Cabello cubierto" },
+      { codigoNoConformidad: "C4", noConformidad: "Accesorios" },
+      { codigoNoConformidad: "C5", noConformidad: "Unas limpias, cortas y sin esmalte" },
+      { codigoNoConformidad: "C6", noConformidad: "Lavado de botas, manos, guantes y delantales" },
+      { codigoNoConformidad: "C7", noConformidad: "Uso adecuado y completo de la dotacion" },
+      { codigoNoConformidad: "C8", noConformidad: "Estado de salud" },
+      { codigoNoConformidad: "C9", noConformidad: "Uso de guantes" },
+      { codigoNoConformidad: "C10", noConformidad: "Perfumes o cremas con olor" },
+      { codigoNoConformidad: "C11", noConformidad: "Practicas higienicas" },
+    ],
+  },
 ];
 
 function getCurrentDateParts() {
@@ -1128,6 +1206,15 @@ function createInitialVisceraTemperatureValues(template) {
   };
 }
 
+function createInitialWeeklyBpmHealthValues(template) {
+  return {
+    weekKey: getWeekKey(),
+    colaboradores: [createInitialDynamicRow(template.bpmTable.columns)],
+    coordinadorJefeProceso: "",
+    auxiliarCalidad: "",
+  };
+}
+
 export function getTemplateFields(template) {
   if (template.layout === "empaques-table") {
     return template.table.columns;
@@ -1188,6 +1275,13 @@ export function getTemplateFields(template) {
       ...(template.fields || []),
       ...(template.temperatureColumns || []),
       ...(template.actionTable?.columns || []),
+    ];
+  }
+
+  if (template.layout === "weekly-bpm-health") {
+    return [
+      ...(template.fields || []),
+      ...(template.bpmTable?.columns || []),
     ];
   }
 
@@ -1277,6 +1371,10 @@ export function getInitialValues(template) {
 
   if (template.layout === "viscera-temperature-daily") {
     return createInitialVisceraTemperatureValues(template);
+  }
+
+  if (template.layout === "weekly-bpm-health") {
+    return createInitialWeeklyBpmHealthValues(template);
   }
 
   return Object.fromEntries(
@@ -1689,6 +1787,38 @@ export function getMissingRequiredField(template, values) {
     return "";
   }
 
+  if (template.layout === "weekly-bpm-health") {
+    const rows = values[template.bpmTable.valueKey] || [];
+
+    if (rows.length === 0) {
+      return "Debes registrar al menos un colaborador.";
+    }
+
+    const missingField = (template.fields || []).find(
+      (field) =>
+        field.required &&
+        !field.locked &&
+        !String(values[field.id] || "").trim()
+    );
+
+    if (missingField) {
+      return `Completa el campo: ${missingField.label}.`;
+    }
+
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex += 1) {
+      const row = rows[rowIndex];
+      const missingColumn = template.bpmTable.columns.find(
+        (column) => column.required && !String(row[column.id] || "").trim()
+      );
+
+      if (missingColumn) {
+        return `Completa ${missingColumn.label} en el colaborador ${rowIndex + 1}.`;
+      }
+    }
+
+    return "";
+  }
+
   const missingField = (template.fields || []).find(
     (field) => field.required && !String(values[field.id] || "").trim()
   );
@@ -1730,6 +1860,10 @@ export function getEditableFieldCount(template) {
   }
 
   if (template.layout === "viscera-temperature-daily") {
+    return getTemplateFields(template).filter((field) => !field.locked).length;
+  }
+
+  if (template.layout === "weekly-bpm-health") {
     return getTemplateFields(template).filter((field) => !field.locked).length;
   }
 
@@ -1794,6 +1928,13 @@ export function getRequiredFieldCount(template) {
       ...(template.fields || []),
       ...(template.temperatureColumns || []),
       ...(template.actionTable?.columns || []),
+    ].filter((field) => field.required && !field.locked).length;
+  }
+
+  if (template.layout === "weekly-bpm-health") {
+    return [
+      ...(template.fields || []),
+      ...(template.bpmTable?.columns || []),
     ].filter((field) => field.required && !field.locked).length;
   }
 

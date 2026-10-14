@@ -34,6 +34,12 @@ import SolicitudesMantenimiento from "./modules/mantenimiento/pages/SolicitudesM
 import FormatosCalidad from "./modules/calidad/pages/Documentos";
 import HistorialFormatos from "./modules/calidad/pages/HistorialFormatos";
 
+// SST
+import DashboardSST from "./modules/sst/pages/DashboardSST";
+import IncapacidadesSST from "./modules/sst/pages/IncapacidadesSST";
+import ExamenesMedicosSST from "./modules/sst/pages/ExamenesMedicosSST";
+import SolicitudesSST from "./modules/sst/pages/SolicitudesSST";
+
 
 
 
@@ -213,6 +219,40 @@ function App() {
                 <Route
                   path={`${module.path}/documentos`}
                   element={<Navigate to={`${module.path}/formatos`} replace />}
+                />
+              </Route>
+            );
+          }
+
+          if (module.id === "sst") {
+            return (
+              <Route
+                key={module.id}
+                element={<ModuleLayout moduleId={module.id} />}
+              >
+                <Route
+                  path={module.path}
+                  element={<Navigate to={`${module.path}/dashboard`} replace />}
+                />
+
+                <Route
+                  path={`${module.path}/dashboard`}
+                  element={<DashboardSST />}
+                />
+
+                <Route
+                  path={`${module.path}/incapacidades`}
+                  element={<IncapacidadesSST />}
+                />
+
+                <Route
+                  path={`${module.path}/examenes-medicos`}
+                  element={<ExamenesMedicosSST />}
+                />
+
+                <Route
+                  path={`${module.path}/solicitudes`}
+                  element={<SolicitudesSST />}
                 />
               </Route>
             );

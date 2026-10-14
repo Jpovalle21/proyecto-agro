@@ -272,6 +272,21 @@ export const MODULE_NAV = {
         ],
         externo: [],
     },
+    sst: {
+        administrador: [
+            { id: "dashboard", label: "Dashboard SST", path: "dashboard" },
+            { id: "incapacidades", label: "Incapacidades", path: "incapacidades" },
+            { id: "examenes", label: "Exámenes médicos", path: "examenes-medicos" },
+            { id: "solicitudes", label: "Solicitudes e incidentes", path: "solicitudes" },
+        ],
+        tecnico: [
+            { id: "dashboard", label: "Dashboard SST", path: "dashboard" },
+            { id: "solicitudes", label: "Solicitudes e incidentes", path: "solicitudes" },
+        ],
+        externo: [
+            { id: "solicitudes", label: "Reportar incidente", path: "solicitudes" },
+        ],
+    },
 };
 
 // Navegación del sidebar principal (dashboard hub)

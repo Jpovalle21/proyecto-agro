@@ -28,7 +28,8 @@ export default function HistorialFormatos() {
           !dateFilter ||
           (group.kind.startsWith("monthly") ||
           group.kind === "cold-rooms-monthly" ||
-          group.kind === "weekly-poes"
+          group.kind === "weekly-poes" ||
+          group.kind === "weekly-bpm-health"
             ? group.filterDate.slice(0, 7) === dateFilter.slice(0, 7)
             : group.filterDate === dateFilter);
         const matchFormat =
@@ -232,6 +233,8 @@ function FormatDetailModal({ group, onClose, onDownload }) {
             <ChlorineChillerDetail group={group} />
           ) : group.kind === "viscera-temperature" ? (
             <VisceraTemperatureDetail group={group} />
+          ) : group.kind === "weekly-bpm-health" ? (
+            <WeeklyBpmHealthDetail group={group} />
           ) : (
             <SamplesDetailTable group={group} />
           )}
@@ -620,7 +623,15 @@ function DetailTable({ title, columns, rows, emptyText }) {
                 </td>
                 {columns.map((column) => (
                   <td key={column.id} className="border-r border-slate-100 px-3 py-3 text-slate-600">
-                    {row[column.id] || ""}
+                    {column.type === "signature" && row[column.id] ? (
+                      <img
+                        src={row[column.id]}
+                        alt="Firma del colaborador"
+                        className="h-16 w-40 rounded-lg border border-slate-200 bg-white object-contain"
+                      />
+                    ) : (
+                      row[column.id] || ""
+                    )}
                   </td>
                 ))}
               </tr>
@@ -783,6 +794,43 @@ function VisceraTemperatureDetail({ group }) {
       />
 
       <GuideDetailTable guide={group.template.guide} />
+    </div>
+  );
+}
+
+function WeeklyBpmHealthDetail({ group }) {
+  const values = group.bpmRecord?.values || {};
+  const rows = values[group.template.bpmTable.valueKey] || [];
+
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-5">
+      <div className="grid gap-3 md:grid-cols-3">
+        <Detail label="Semana" value={group.periodLabel} />
+        <Detail label="Colaboradores" value={rows.length} />
+        <Detail label="Coordinador / jefe" value={values.coordinadorJefeProceso || "Sin responsable"} />
+      </div>
+
+      <DetailTable
+        title="Colaboradores evaluados"
+        columns={group.template.bpmTable.columns}
+        rows={rows}
+        emptyText="Sin colaboradores registrados."
+      />
+
+      <div className="grid gap-3 md:grid-cols-2">
+        <Detail label="Auxiliar de calidad" value={values.auxiliarCalidad || "Sin auxiliar registrado"} />
+        <Detail label="Convenciones" value="✓ Conforme / X No conforme" />
+      </div>
+
+      <DetailTable
+        title="Codigos de no conformidad"
+        columns={[
+          { id: "codigoNoConformidad", label: "Codigo no conformidad" },
+          { id: "noConformidad", label: "Aspecto evaluado" },
+        ]}
+        rows={group.template.guide}
+        emptyText="Sin codigos configurados."
+      />
     </div>
   );
 }
@@ -1056,6 +1104,11 @@ function groupRecords(records) {
       return;
     }
 
+    if (template.layout === "weekly-bpm-health") {
+      addWeeklyBpmHealthRecord(groups, record, template);
+      return;
+    }
+
     addSampleRecord(groups, record, template);
   });
 
@@ -1102,6 +1155,10 @@ function groupRecords(records) {
       return group;
     }
 
+    if (group.kind === "weekly-bpm-health") {
+      return group;
+    }
+
     return {
       ...group,
       samples: group.samples.sort(
@@ -1136,6 +1193,38 @@ function addWeeklyPoesRecord(groups, record, template) {
   current.verifiers = getUniqueValues([
     ...responsibles.map((area) => area.verificadoPor),
     ...(record.values?.acciones || []).map((action) => action.verificadoPor),
+  ]);
+
+  groups.set(groupId, current);
+}
+
+function addWeeklyBpmHealthRecord(groups, record, template) {
+  const periodKey = record.periodKey || record.values?.weekKey || getDateKey(record.fechaRegistro);
+  if (!periodKey) return;
+
+  const groupId = `${record.formatoId}-${periodKey}`;
+  const current = createBaseGroup({
+    id: groupId,
+    record,
+    template,
+    kind: "weekly-bpm-health",
+    filterDate: periodKey,
+    periodLabel: record.periodLabel || `Semana ${periodKey}`,
+  });
+
+  current.records = [record];
+  current.periodKey = periodKey;
+  current.bpmRecord = {
+    id: record.id,
+    fechaRegistro: record.fechaRegistro,
+    values: record.values || {},
+  };
+  current.verifiers = getUniqueValues([
+    record.values?.coordinadorJefeProceso,
+    record.values?.auxiliarCalidad,
+    ...(record.values?.[template.bpmTable.valueKey] || []).map(
+      (row) => row.monitoreadoVerificadoPor
+    ),
   ]);
 
   groups.set(groupId, current);
@@ -1462,6 +1551,8 @@ function downloadFormat(group) {
     ? buildMonthlyDownloadHtml(group)
     : group.kind === "weekly-poes"
       ? buildWeeklyPoesDownloadHtml(group)
+    : group.kind === "weekly-bpm-health"
+      ? buildWeeklyBpmHealthDownloadHtml(group)
     : group.kind === "daily-trip"
       ? buildDailyTripDownloadHtml(group)
     : group.kind === "hydration-test"
@@ -1584,6 +1675,45 @@ function buildWeeklyPoesDownloadHtml(group) {
     ${areaTables}
     <h3>Acciones correctivas</h3>
     ${buildTableHtml(group.template.actionTable.columns, actions)}
+  `;
+
+  return buildExcelHtml({
+    group,
+    countLabel: getGroupCountLabel(group),
+    body,
+  });
+}
+
+function buildWeeklyBpmHealthDownloadHtml(group) {
+  const values = group.bpmRecord?.values || {};
+  const rows = buildRowsHtml(
+    group.template.bpmTable.columns,
+    values[group.template.bpmTable.valueKey] || []
+  );
+  const guideColumns = [
+    { id: "codigoNoConformidad", label: "Codigo no conformidad" },
+    { id: "noConformidad", label: "Aspecto evaluado" },
+  ];
+  const guideRows = buildRowsHtml(guideColumns, group.template.guide || []);
+  const body = `
+    <table>
+      <tbody>
+        <tr><th>Semana</th><td>${escapeHtml(values.weekKey || group.periodKey)}</td></tr>
+        <tr><th>Coordinador y/o jefe de proceso</th><td>${escapeHtml(values.coordinadorJefeProceso || "")}</td></tr>
+        <tr><th>Auxiliar de calidad</th><td>${escapeHtml(values.auxiliarCalidad || "")}</td></tr>
+      </tbody>
+    </table>
+    <h3>Colaboradores evaluados</h3>
+    ${buildTableHtml(group.template.bpmTable.columns, rows)}
+    <h3>Convenciones</h3>
+    <table>
+      <tbody>
+        <tr><th>✓</th><td>Conforme</td></tr>
+        <tr><th>X</th><td>No conforme</td></tr>
+      </tbody>
+    </table>
+    <h3>Codigos de no conformidad</h3>
+    ${buildTableHtml(guideColumns, guideRows)}
   `;
 
   return buildExcelHtml({
@@ -1890,7 +2020,15 @@ function buildRowsHtml(columns, rows) {
   return rows
     .map((row, index) => {
       const cells = columns
-        .map((column) => `<td>${escapeHtml(row[column.id] || "")}</td>`)
+        .map((column) => {
+          const value = row[column.id] || "";
+
+          if (column.type === "signature" && value) {
+            return `<td><img src="${escapeHtml(value)}" alt="Firma" style="height:60px;width:150px;object-fit:contain;" /></td>`;
+          }
+
+          return `<td>${escapeHtml(value)}</td>`;
+        })
         .join("");
 
       return `<tr><td>${index + 1}</td>${cells}</tr>`;
@@ -2188,6 +2326,28 @@ function getGroupSearchText(group) {
       .join(" ");
   }
 
+  if (group.kind === "weekly-bpm-health") {
+    const values = group.bpmRecord?.values || {};
+
+    return [
+      group.codigo,
+      group.nombre,
+      group.periodLabel,
+      group.verifiers.join(" "),
+      values.weekKey,
+      values.coordinadorJefeProceso,
+      values.auxiliarCalidad,
+      ...(values[group.template.bpmTable.valueKey] || []).flatMap((row) =>
+        Object.entries(row)
+          .filter(([key]) => key !== "firmaColaborador")
+          .map(([, value]) => value)
+      ),
+      ...(group.template.guide || []).flatMap((row) => Object.values(row)),
+    ]
+      .filter(Boolean)
+      .join(" ");
+  }
+
   if (group.kind === "weekly-poes") {
     const values = group.weeklyRecord?.values || {};
     const responsibles = getWeeklyPoesAreaResponsibles(values, group.template);
@@ -2303,6 +2463,15 @@ function getGroupCountLabel(group) {
     return samples === 1
       ? "1 muestreo"
       : `${samples} muestreos`;
+  }
+
+  if (group.kind === "weekly-bpm-health") {
+    const values = group.bpmRecord?.values || {};
+    const collaborators = values[group.template.bpmTable.valueKey] || [];
+
+    return collaborators.length === 1
+      ? "1 colaborador"
+      : `${collaborators.length} colaboradores`;
   }
 
   if (group.kind === "weekly-poes") {

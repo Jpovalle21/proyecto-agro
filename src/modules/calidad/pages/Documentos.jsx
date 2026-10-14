@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import controlPccCanalesImage from "../../../assets/calidad/control-pcc-canales.png";
 import {
   createInitialDynamicRow,
@@ -106,6 +106,16 @@ export default function DocumentosCalidad() {
         : initialValues;
     }
 
+    if (selectedTemplate.layout === "weekly-bpm-health") {
+      const weekRecord = selectedPeriodRecords.find(
+        (record) => (record.periodKey || record.values?.weekKey) === initialValues.weekKey
+      );
+
+      return weekRecord?.values
+        ? JSON.parse(JSON.stringify(weekRecord.values))
+        : initialValues;
+    }
+
     if (selectedTemplate.layout === "cold-rooms-monthly") {
       const monthRecord = selectedPeriodRecords.find(
         (record) => (record.periodKey || record.values?.monthKey) === initialValues.monthKey
@@ -152,6 +162,11 @@ export default function DocumentosCalidad() {
             ? periodRecords.find(
                 (record) =>
                   (record.dayKey || record.values?.loteProceso) === initialValues.loteProceso
+              )
+          : targetTemplate.layout === "weekly-bpm-health"
+            ? periodRecords.find(
+                (record) =>
+                  (record.periodKey || record.values?.weekKey) === initialValues.weekKey
               )
           : targetTemplate.layout === "cold-rooms-monthly"
             ? periodRecords.find(
@@ -249,6 +264,9 @@ export default function DocumentosCalidad() {
       record.dayKey = values.loteProceso;
     } else if (selectedTemplate.layout === "viscera-temperature-daily") {
       record.dayKey = values.loteProceso;
+    } else if (selectedTemplate.layout === "weekly-bpm-health") {
+      record.periodKey = values.weekKey;
+      record.periodLabel = `Semana ${values.weekKey}`;
     }
 
     setRecords((current) => {
@@ -261,7 +279,8 @@ export default function DocumentosCalidad() {
         selectedTemplate.layout !== "cold-rooms-monthly" &&
         selectedTemplate.layout !== "dispatch-product-daily" &&
         selectedTemplate.layout !== "chlorine-chiller-daily" &&
-        selectedTemplate.layout !== "viscera-temperature-daily"
+        selectedTemplate.layout !== "viscera-temperature-daily" &&
+        selectedTemplate.layout !== "weekly-bpm-health"
       ) {
         return [record, ...current];
       }
@@ -350,6 +369,18 @@ export default function DocumentosCalidad() {
         return [record, ...withoutSameDay];
       }
 
+      if (selectedTemplate.layout === "weekly-bpm-health") {
+        const withoutSameWeek = current.filter(
+          (item) =>
+            !(
+              item.formatoId === selectedTemplate.id &&
+              (item.periodKey || item.values?.weekKey) === record.periodKey
+            )
+        );
+
+        return [record, ...withoutSameWeek];
+      }
+
       if (selectedTemplate.layout === "cold-rooms-monthly") {
         const withoutSameMonth = current.filter(
           (item) =>
@@ -378,7 +409,8 @@ export default function DocumentosCalidad() {
         selectedTemplate.layout === "cold-rooms-monthly" ||
         selectedTemplate.layout === "dispatch-product-daily" ||
         selectedTemplate.layout === "chlorine-chiller-daily" ||
-        selectedTemplate.layout === "viscera-temperature-daily"
+        selectedTemplate.layout === "viscera-temperature-daily" ||
+        selectedTemplate.layout === "weekly-bpm-health"
         ? values
         : getInitialValues(selectedTemplate)
     );
@@ -401,6 +433,8 @@ export default function DocumentosCalidad() {
           ? "Formato de cloro residual guardado correctamente para el dia."
         : selectedTemplate.layout === "viscera-temperature-daily"
           ? "Formato de temperaturas de visceras guardado correctamente para el dia."
+        : selectedTemplate.layout === "weekly-bpm-health"
+          ? "Formato semanal de BPM guardado correctamente."
         : selectedTemplate.period === "monthly"
           ? "Medicion guardada correctamente dentro del formato mensual."
           : "Muestra guardada correctamente. Puedes registrar otra muestra."
@@ -658,6 +692,7 @@ function FullPageForm({
   const isDispatchProductDaily = template.layout === "dispatch-product-daily";
   const isChlorineChillerDaily = template.layout === "chlorine-chiller-daily";
   const isVisceraTemperatureDaily = template.layout === "viscera-temperature-daily";
+  const isWeeklyBpmHealth = template.layout === "weekly-bpm-health";
   const submitLabel = isMonthlyChecklist
     ? "Guardar dia"
     : isWeeklyPoes
@@ -676,6 +711,8 @@ function FullPageForm({
       ? "Guardar formato del dia"
     : isVisceraTemperatureDaily
       ? "Guardar formato del dia"
+    : isWeeklyBpmHealth
+      ? "Guardar semana"
       : template.table?.saveLabel || "Guardar muestra";
   const clearLabel = isMonthlyChecklist
     ? "Limpiar dia"
@@ -695,6 +732,8 @@ function FullPageForm({
       ? "Limpiar formato"
     : isVisceraTemperatureDaily
       ? "Limpiar formato"
+    : isWeeklyBpmHealth
+      ? "Limpiar semana"
       : template.table?.clearLabel || "Limpiar muestra";
 
   return (
@@ -783,6 +822,13 @@ function FullPageForm({
             />
           ) : isVisceraTemperatureDaily ? (
             <VisceraTemperatureForm
+              template={template}
+              values={values}
+              savedRecords={savedRecords}
+              onValueChange={onValueChange}
+            />
+          ) : isWeeklyBpmHealth ? (
+            <WeeklyBpmHealthForm
               template={template}
               values={values}
               savedRecords={savedRecords}
@@ -2472,6 +2518,397 @@ function VisceraTemperatureField({ column, value, onChange, dense = false }) {
   );
 }
 
+function WeeklyBpmHealthForm({ template, values, savedRecords, onValueChange }) {
+  const rows = values[template.bpmTable.valueKey] || [];
+  const savedWeek = savedRecords.find(
+    (record) => (record.periodKey || record.values?.weekKey) === values.weekKey
+  );
+
+  return (
+    <div className="grid min-w-0 grid-cols-1 gap-5">
+      <section className="rounded-xl border border-slate-200">
+        <div className="grid gap-4 border-b border-slate-100 bg-slate-50 p-5 sm:grid-cols-2 lg:grid-cols-[180px_180px_1fr]">
+          <ReadOnlyInfo label="Semana" value={values.weekKey} />
+          <ReadOnlyInfo label="Colaboradores" value={rows.length} />
+          <div className="flex items-end">
+            <p className="rounded-lg bg-white px-4 py-3 text-sm font-bold text-slate-600">
+              {savedWeek
+                ? "Ya existe un formato guardado para esta semana. Se cargo para continuar editandolo."
+                : "Este formato se cierra semanalmente con todos los colaboradores evaluados."}
+            </p>
+          </div>
+        </div>
+
+        <BpmCollaboratorsEditor
+          template={template}
+          columns={template.bpmTable.columns}
+          rows={rows}
+          onRowsChange={(nextRows) => onValueChange(template.bpmTable.valueKey, nextRows)}
+        />
+      </section>
+
+      <section className="rounded-xl border border-slate-200">
+        <div className="border-b border-slate-100 bg-white px-5 py-4">
+          <h2 className="text-lg font-black text-slate-900">Cierre semanal</h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            Completa el responsable del proceso y el auxiliar de calidad si aplica.
+          </p>
+        </div>
+
+        <div className="grid gap-4 p-5 md:grid-cols-2">
+          <FieldControl
+            field={template.fields.find((field) => field.id === "coordinadorJefeProceso")}
+            value={values.coordinadorJefeProceso || ""}
+            onChange={(value) => onValueChange("coordinadorJefeProceso", value)}
+          />
+          <FieldControl
+            field={template.fields.find((field) => field.id === "auxiliarCalidad")}
+            value={values.auxiliarCalidad || ""}
+            onChange={(value) => onValueChange("auxiliarCalidad", value)}
+          />
+        </div>
+      </section>
+
+      <BpmConventionsGuide template={template} />
+    </div>
+  );
+}
+
+function BpmCollaboratorsEditor({ template, columns, rows, onRowsChange }) {
+  const columnById = Object.fromEntries(columns.map((column) => [column.id, column]));
+  const markColumns = columns.filter((column) => column.type === "mark");
+  const rowMetaFields = ["fecha", "hora", "nombreColaborador", "cedula", "area"];
+  const closureFields = ["noConformidad", "accionesCorrectivas", "monitoreadoVerificadoPor"];
+
+  const updateRow = (rowIndex, columnId, value) => {
+    onRowsChange(
+      rows.map((row, index) =>
+        index === rowIndex ? { ...row, [columnId]: value } : row
+      )
+    );
+  };
+
+  const addRow = () => {
+    onRowsChange([...rows, createInitialDynamicRow(columns)]);
+  };
+
+  const removeRow = (rowIndex) => {
+    onRowsChange(rows.filter((_, index) => index !== rowIndex));
+  };
+
+  return (
+    <div className="overflow-hidden">
+      <div className="flex flex-col gap-3 border-b border-slate-100 bg-white px-5 py-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h2 className="text-lg font-black text-slate-900">{template.bpmTable.title}</h2>
+          <p className="mt-1 text-sm font-medium text-slate-500">{template.bpmTable.help}</p>
+        </div>
+        <button type="button" onClick={addRow} className="btn-secondary">
+          Agregar colaborador
+        </button>
+      </div>
+
+      <div className="grid min-w-0 grid-cols-1 gap-4 bg-slate-50 p-5">
+        {rows.map((row, rowIndex) => (
+          <article key={rowIndex} className="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-[rgb(0,48,73)] text-sm font-black text-white">
+                  {rowIndex + 1}
+                </span>
+                <div>
+                  <h3 className="font-black text-slate-900">Colaborador {rowIndex + 1}</h3>
+                  <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+                    Verificacion BPM semanal
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => removeRow(rowIndex)}
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-slate-100"
+              >
+                Quitar
+              </button>
+            </div>
+
+            <div
+              className="grid min-w-0 gap-3"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 190px), 1fr))" }}
+            >
+              {rowMetaFields.map((fieldId) => (
+                <BpmField
+                  key={fieldId}
+                  column={columnById[fieldId]}
+                  value={row[fieldId] || ""}
+                  options={template.markOptions}
+                  onChange={(value) => updateRow(rowIndex, fieldId, value)}
+                />
+              ))}
+            </div>
+
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3">
+              <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400">
+                Aspectos a evaluar
+              </p>
+              <div
+                className="grid min-w-0 gap-3"
+                style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 170px), 1fr))" }}
+              >
+                {markColumns.map((column) => (
+                  <BpmField
+                    key={column.id}
+                    column={column}
+                    value={row[column.id] || ""}
+                    options={template.markOptions}
+                    onChange={(value) => updateRow(rowIndex, column.id, value)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div
+              className="mt-4 grid min-w-0 gap-3"
+              style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 220px), 1fr))" }}
+            >
+              {closureFields.map((fieldId) => (
+                <BpmField
+                  key={fieldId}
+                  column={columnById[fieldId]}
+                  value={row[fieldId] || ""}
+                  options={template.markOptions}
+                  onChange={(value) => updateRow(rowIndex, fieldId, value)}
+                  wide={columnById[fieldId]?.type === "textarea"}
+                />
+              ))}
+            </div>
+
+            <div className="mt-4">
+              <SignaturePad
+                label="Firma del colaborador"
+                value={row.firmaColaborador || ""}
+                required
+                onChange={(value) => updateRow(rowIndex, "firmaColaborador", value)}
+              />
+            </div>
+          </article>
+        ))}
+
+        {rows.length === 0 && (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white px-5 py-10 text-center">
+            <p className="font-bold text-slate-700">Sin colaboradores registrados.</p>
+            <p className="mt-1 text-sm text-slate-500">
+              Usa Agregar colaborador para iniciar el formato semanal.
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BpmField({ column, value, onChange, options = [], wide = false }) {
+  if (!column) return null;
+
+  if (column.locked) {
+    return (
+      <div>
+        <p className="label">{column.label}</p>
+        <div className="flex h-11 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700">
+          {value}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={wide ? "md:col-span-2" : ""}>
+      <label className="label">
+        {column.label}
+        {column.required && !column.locked && <span className="ml-1 text-red-500">*</span>}
+      </label>
+      {column.type === "mark" ? (
+        <div className="grid grid-cols-2 gap-2">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => onChange(value === option ? "" : option)}
+              className={`h-10 rounded-lg border text-sm font-black transition ${
+                value === option
+                  ? "border-[rgb(0,48,73)] bg-[rgb(0,48,73)] text-white"
+                  : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+              }`}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      ) : column.type === "textarea" ? (
+        <textarea
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="input-pro min-h-24 resize-none bg-white"
+          placeholder={column.label}
+        />
+      ) : (
+        <input
+          type={column.type}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="input-pro bg-white"
+          placeholder={column.label}
+        />
+      )}
+    </div>
+  );
+}
+
+function SignaturePad({ label, value, onChange, required = false }) {
+  const canvasRef = useRef(null);
+  const drawingRef = useRef(false);
+  const lastPointRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.lineCap = "round";
+    context.lineJoin = "round";
+    context.lineWidth = 2;
+    context.strokeStyle = "#0f172a";
+
+    if (value) {
+      const image = new Image();
+      image.onload = () => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0, canvas.width, canvas.height);
+      };
+      image.src = value;
+    }
+  }, [value]);
+
+  const getPoint = (event) => {
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+    };
+  };
+
+  const saveSignature = () => {
+    const canvas = canvasRef.current;
+    onChange(canvas.toDataURL("image/png"));
+  };
+
+  const startDrawing = (event) => {
+    event.preventDefault();
+    drawingRef.current = true;
+    lastPointRef.current = getPoint(event);
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const draw = (event) => {
+    if (!drawingRef.current) return;
+    event.preventDefault();
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    const point = getPoint(event);
+    const lastPoint = lastPointRef.current || point;
+
+    context.beginPath();
+    context.moveTo(lastPoint.x, lastPoint.y);
+    context.lineTo(point.x, point.y);
+    context.stroke();
+    lastPointRef.current = point;
+  };
+
+  const stopDrawing = () => {
+    if (!drawingRef.current) return;
+    drawingRef.current = false;
+    lastPointRef.current = null;
+    saveSignature();
+  };
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    onChange("");
+  };
+
+  return (
+    <div>
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <label className="label">
+          {label}
+          {required && <span className="ml-1 text-red-500">*</span>}
+        </label>
+        <button
+          type="button"
+          onClick={clearSignature}
+          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-500 transition hover:bg-slate-50"
+        >
+          Limpiar firma
+        </button>
+      </div>
+      <canvas
+        ref={canvasRef}
+        width="620"
+        height="180"
+        onPointerDown={startDrawing}
+        onPointerMove={draw}
+        onPointerUp={stopDrawing}
+        onPointerCancel={stopDrawing}
+        onPointerLeave={stopDrawing}
+        className="h-44 w-full touch-none rounded-xl border border-slate-300 bg-white"
+      />
+    </div>
+  );
+}
+
+function BpmConventionsGuide({ template }) {
+  return (
+    <section className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="border-b border-slate-100 bg-white px-5 py-4">
+        <h2 className="text-lg font-black text-slate-900">
+          Convenciones y codigos
+        </h2>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          ✓ Conforme. X No conforme.
+        </p>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-sm">
+          <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+            <tr>
+              <th className="px-3 py-3 text-left">Codigo no conformidad</th>
+              <th className="px-3 py-3 text-left">Aspecto evaluado</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 bg-white">
+            {template.guide.map((item) => (
+              <tr key={item.codigoNoConformidad}>
+                <td className="px-3 py-3 font-black text-slate-700">
+                  {item.codigoNoConformidad}
+                </td>
+                <td className="px-3 py-3 font-semibold text-slate-700">
+                  {item.noConformidad}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
 function DynamicRowsTable({
   title,
   help,
@@ -3294,6 +3731,16 @@ function getRecordTitle(record) {
       getWeeklyPoesPeriodLabel(record.values, record.periodKey),
       ...new Set(verifierNames.filter(Boolean)),
     ].filter(Boolean).join(" - ");
+  }
+
+  if (record.values?.colaboradores) {
+    const collaborators = record.values.colaboradores.length;
+
+    return [
+      record.periodLabel || `Semana ${record.values.weekKey}`,
+      collaborators === 1 ? "1 colaborador" : `${collaborators} colaboradores`,
+      record.values.coordinadorJefeProceso,
+    ].filter(Boolean).join(" - ") || "Formato semanal guardado";
   }
 
   if (record.values?.muestras && record.values?.granja) {
